@@ -20,7 +20,7 @@ type TxRecord = {
 export default function TransactionFeed() {
   const [records, setRecords] = useState<TxRecord[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
-  const [stream, setStream] = useState(getStreamFromUrl());
+  const [stream] = useState(getStreamFromUrl());
 
   useEffect(() => {
     if (!stream) return;
