@@ -36,6 +36,7 @@
 .card {
   padding: .5em;
   margin: .5em;
+  width: 100%;
 }
 
 .read-the-docs {
@@ -43,7 +44,7 @@
 }
 
 .rounded {
-  border-radius: 1em;
+  border-radius: .1em;
 }
 .rounded:hover {
   box-shadow: 0 0 2em #646cffaa;
@@ -64,4 +65,12 @@
 }
 .clearfix {
     clear: both;
+}
+
+.feed-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 480;
 }
