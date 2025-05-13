@@ -3,12 +3,14 @@ export type TxRecord = {
     hash: string;
     fromAddress: string;
     fromName: string;
+    fromAvatar: string;
     toAddress: string;
     value: string;
     input: string;
     summary: string;
     method: string;
     blockTimestamp: string;
+    network: string;
   };
 
 export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
@@ -28,6 +30,20 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     return `${seconds} second(s) ago`;
   };
 
+  const getExplorerUrl = (tx: TxRecord) => {
+    const network = tx.network
+    const txHash = tx.hash
+    const explorer = network === 'eth-mainnet' ? 'etherscan.io' : 'basescan.org'
+    
+    const explorerUrl = `https://${explorer}/tx/${txHash}`
+    return explorerUrl
+  };
+
+  const getEFPUrl = (tx: TxRecord) => {
+    const user = tx.fromName
+    const url = `https://efp.app/${user}`
+    return url
+  }
 //   useEffect(() => {
 
 //   })
@@ -36,14 +52,24 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     <div className="card border rounded" key={index}>
         <li key={`${tx.hash}-${index}`} className="p-2 ">
             <div>
-              <div className="left">{tx.fromName}</div>
-              <div className="right" title={new Date(Number(tx.blockTimestamp)).toLocaleString()}> {timeSince(tx.blockTimestamp)}</div>
+              <div className="leftcell">
+                <a href={getEFPUrl(tx)}>{tx.fromName}</a>
+              </div>
+              <div className="rightcell top" title={new Date(Number(tx.blockTimestamp)).toLocaleString()}>
+                <a href={getExplorerUrl(tx)}>{timeSince(tx.blockTimestamp)}</a>
+              </div>
             </div>
-            <div className="clearfix">
-              <div>{tx.summary}</div>
-              <div>{tx.method}</div>
-              {/* <div>{tx.input}</div> */}
+            <div>
+              <div className="inline">
+                {tx.fromAvatar && <img src={tx.fromAvatar} alt={`${tx.fromName}'s avatar`} className="avatar" />}
+              </div>
+              <div className="inline top">
+                <div>{tx.summary}</div>
+                {tx.method && <div className="action">{tx.method}</div>}
+                {/* <div>{tx.input}</div> */}
+              </div>
             </div>
+
 
         </li>
     </div>
