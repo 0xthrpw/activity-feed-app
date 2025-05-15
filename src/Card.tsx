@@ -8,6 +8,7 @@ export type TxRecord = {
     value: string;
     input: string;
     summary: string;
+    summaries: string[];
     method: string;
     blockTimestamp: string;
     network: string;
@@ -44,9 +45,16 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     const url = `https://efp.app/${user}`
     return url
   }
-//   useEffect(() => {
 
-//   })
+  const getExtendedSummary = (tx: TxRecord) => {
+    const summary = tx.summary
+    const summaries = tx.summaries
+    let story = ''
+    for (let i = 0; i < summaries.length; i++) {
+        story += summaries[i]
+    }
+    return summary + '\n' + story
+  }
 
   return (
     <div className="card border rounded" key={index}>
@@ -64,11 +72,13 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
                 {tx.fromAvatar && <img src={tx.fromAvatar} alt={`${tx.fromName}'s avatar`} className="avatar" />}
               </div>
               <div className="inline top">
-                <div>{tx.summary}</div>
+                
                 {tx.method && <div className="action">{tx.method}</div>}
                 {/* <div>{tx.input}</div> */}
+
               </div>
             </div>
+            <div>{getExtendedSummary(tx)} </div>
 
 
         </li>
