@@ -8,7 +8,7 @@ export type TxRecord = {
     value: string;
     input: string;
     summary: string;
-    summaries: string[];
+    summaries: string;
     method: string;
     blockTimestamp: string;
     network: string;
@@ -49,11 +49,20 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
   const getExtendedSummary = (tx: TxRecord) => {
     const summary = tx.summary
     const summaries = tx.summaries
-    let story = ''
-    for (let i = 0; i < summaries.length; i++) {
-        story += summaries[i]
+    console.log("summaries", summaries)
+    if (!summaries) {
+      return summary
     }
-    return summary + '\n' + story
+    const parsedSummaries = JSON.parse(summaries)
+    if (!parsedSummaries) {
+      return summary
+    }
+    if (parsedSummaries.length === 0) {
+      return summary
+    }
+    const story = parsedSummaries.map((item: string, i: number) => <div key={i}>{item}</div>)
+    
+    return <div className="summary">{summary} <br /> {story}</div>
   }
 
   return (
