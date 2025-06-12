@@ -10,7 +10,7 @@ const getStreamFromUrl = () => {
 };
 
 let socket: WebSocket;
-  export default function TransactionFeed() {
+export default function TransactionFeed() {
   const [records, setRecords] = useState<TxRecord[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
   const [stream] = useState(getStreamFromUrl());

@@ -12,12 +12,41 @@ export type TxRecord = {
     method: string;
     blockTimestamp: string;
     network: string;
+    parsedLogs: string;
   };
+
+export type ParsedLog = {
+    address: string;
+    contractName: string;
+    name: string;
+    args: Record<string, unknown>;
+    summary: string;
+    icon?: string;
+};
 
 export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
 
   const timeSince = (timestamp: string) => {
     const now = Date.now();
+
+    //2025-04-01T04:15:23+00:00
+    // Convert timestamp to milliseconds
+    if (!timestamp) {
+      return ' - ';
+    }
+
+    if (timestamp.length === 24) {
+      // Convert ISO 8601 string to milliseconds
+      timestamp = timestamp.replace('Z', '+00:00'); // Ensure it has a timezone
+      timestamp = new Date(timestamp).getTime().toString();
+    } else if (timestamp.length === 19) {
+      // Convert ISO 8601 string without timezone to milliseconds
+      timestamp = new Date(`${timestamp}Z`).getTime().toString();
+    }else{
+      timestamp = new Date(timestamp).getTime().toString();
+    }
+
+    // console.log("timestamp", timestamp)
     const elapsed = now - Number(timestamp);
 
     const seconds = Math.floor(elapsed / 1000);
@@ -48,19 +77,20 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
 
   const getExtendedSummary = (tx: TxRecord) => {
     const summary = tx.summary
-    const summaries = tx.summaries
-    console.log("summaries", summaries)
-    if (!summaries) {
-      return summary
+    const logs = tx.parsedLogs
+    // console.log("summaries", logs)
+    if (!logs) {
+      return 
     }
-    const parsedSummaries = JSON.parse(summaries)
+    const parsedSummaries: ParsedLog[] = JSON.parse(logs)
     if (!parsedSummaries) {
       return summary
     }
     if (parsedSummaries.length === 0) {
       return summary
     }
-    const story = parsedSummaries.map((item: string, i: number) => <div key={i}>{item}</div>)
+    console.log("story", parsedSummaries)
+    const story = parsedSummaries.map((item: ParsedLog, i: number) => <div key={i}>{item?.summary}</div>)
     
     return <div className="summary">{summary} <br /> {story}</div>
   }
