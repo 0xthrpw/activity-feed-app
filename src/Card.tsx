@@ -90,7 +90,9 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
       return summary
     }
     console.log("story", parsedSummaries)
-    const story = parsedSummaries.map((item: ParsedLog, i: number) => <div key={i}>{item?.summary}</div>)
+    const story = parsedSummaries.map((item: ParsedLog, i: number) => (
+      <div key={i} style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
+    ))
     
     return <div className="summary">{summary} <br /> {story}</div>
   }
