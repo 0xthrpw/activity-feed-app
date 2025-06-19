@@ -1,6 +1,7 @@
 // import { useEffect } from 'react';
 export type TxRecord = {
     hash: string;
+    chainId: number;
     fromAddress: string;
     fromName: string;
     fromAvatar: string;
@@ -12,7 +13,7 @@ export type TxRecord = {
     method: string;
     blockTimestamp: string;
     network: string;
-    parsedLogs: string;
+    parsedLogs: ParsedLog[];
   };
 
 export type ParsedLog = {
@@ -26,28 +27,22 @@ export type ParsedLog = {
 
 export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
 
+  const parseTimestamp = (timestamp: string): Date => {
+    if (!timestamp) return new Date(NaN);
+    const numeric = /^\d+$/.test(timestamp);
+    if (numeric) {
+      const ms = timestamp.length === 10 ? Number(timestamp) * 1000 : Number(timestamp);
+      return new Date(ms);
+    }
+    return new Date(timestamp);
+  };
+
   const timeSince = (timestamp: string) => {
+    const date = parseTimestamp(timestamp);
+    if (isNaN(date.getTime())) return ' - ';
+
     const now = Date.now();
-
-    //2025-04-01T04:15:23+00:00
-    // Convert timestamp to milliseconds
-    if (!timestamp) {
-      return ' - ';
-    }
-
-    if (timestamp.length === 24) {
-      // Convert ISO 8601 string to milliseconds
-      timestamp = timestamp.replace('Z', '+00:00'); // Ensure it has a timezone
-      timestamp = new Date(timestamp).getTime().toString();
-    } else if (timestamp.length === 19) {
-      // Convert ISO 8601 string without timezone to milliseconds
-      timestamp = new Date(`${timestamp}Z`).getTime().toString();
-    }else{
-      timestamp = new Date(timestamp).getTime().toString();
-    }
-
-    // console.log("timestamp", timestamp)
-    const elapsed = now - Number(timestamp);
+    const elapsed = now - date.getTime();
 
     const seconds = Math.floor(elapsed / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -60,13 +55,23 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     return `${seconds} second(s) ago`;
   };
 
+  const CHAIN_EXPLORERS: Record<string, string> = {
+    '1': 'https://etherscan.io',
+    '5': 'https://goerli.etherscan.io',
+    '11155111': 'https://sepolia.etherscan.io',
+    '10': 'https://optimistic.etherscan.io',
+    '420': 'https://goerli-optimism.etherscan.io',
+    '137': 'https://polygonscan.com',
+    '80001': 'https://mumbai.polygonscan.com',
+    '42161': 'https://arbiscan.io',
+    '421613': 'https://testnet.arbiscan.io',
+    '8453': 'https://basescan.org',
+    '84531': 'https://testnet.basescan.org',
+  };
+
   const getExplorerUrl = (tx: TxRecord) => {
-    const network = tx.network
-    const txHash = tx.hash
-    const explorer = network === 'eth-mainnet' ? 'etherscan.io' : 'basescan.org'
-    
-    const explorerUrl = `https://${explorer}/tx/${txHash}`
-    return explorerUrl
+    const explorer = CHAIN_EXPLORERS[tx.chainId.toString()] || 'https://etherscan.io';
+    return `${explorer}/tx/${tx.hash}`;
   };
 
   const getEFPUrl = (tx: TxRecord) => {
@@ -82,19 +87,21 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     if (!logs) {
       return 
     }
-    const parsedSummaries: ParsedLog[] = JSON.parse(logs)
+    const parsedSummaries: ParsedLog[] = Object.values(logs)
+    // console.log("parsedSummaries", typeof parsedSummaries, parsedSummaries)
     if (!parsedSummaries) {
       return summary
     }
     if (parsedSummaries.length === 0) {
       return summary
     }
-    console.log("story", parsedSummaries)
-    const story = parsedSummaries.map((item: ParsedLog, i: number) => (
-      <div key={i} style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
+    // console.log("story", parsedSummaries)
+    const story = parsedSummaries.map((item) => (
+      <div style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
     ))
     
     return <div className="summary">{summary} <br /> {story}</div>
+    // return <div className="summary">{summary} <br /> </div>
   }
 
   return (
@@ -104,7 +111,7 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
               <div className="leftcell">
                 <a href={getEFPUrl(tx)}>{tx.fromName}</a>
               </div>
-              <div className="rightcell top" title={new Date(Number(tx.blockTimestamp)).toLocaleString()}>
+              <div className="rightcell top" title={parseTimestamp(tx.blockTimestamp).toLocaleString()}>
                 <a href={getExplorerUrl(tx)}>{timeSince(tx.blockTimestamp)}</a>
               </div>
             </div>
@@ -116,7 +123,7 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
                 
                 {tx.method && <div className="action">{tx.method}</div>}
                 {/* <div>{tx.input}</div> */}
-
+                {tx.chainId}
               </div>
             </div>
             <div>{getExtendedSummary(tx)} </div>
