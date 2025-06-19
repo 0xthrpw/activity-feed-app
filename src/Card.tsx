@@ -1,6 +1,7 @@
 // import { useEffect } from 'react';
 export type TxRecord = {
     hash: string;
+    chainId: number;
     fromAddress: string;
     fromName: string;
     fromAvatar: string;
@@ -12,7 +13,7 @@ export type TxRecord = {
     method: string;
     blockTimestamp: string;
     network: string;
-    parsedLogs: string;
+    parsedLogs: ParsedLog[];
   };
 
 export type ParsedLog = {
@@ -69,7 +70,7 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
   };
 
   const getExplorerUrl = (tx: TxRecord) => {
-    const explorer = CHAIN_EXPLORERS[tx.network] || 'https://etherscan.io';
+    const explorer = CHAIN_EXPLORERS[tx.chainId.toString()] || 'https://etherscan.io';
     return `${explorer}/tx/${tx.hash}`;
   };
 
@@ -86,19 +87,21 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     if (!logs) {
       return 
     }
-    const parsedSummaries: ParsedLog[] = JSON.parse(logs)
+    const parsedSummaries: ParsedLog[] = Object.values(logs)
+    // console.log("parsedSummaries", typeof parsedSummaries, parsedSummaries)
     if (!parsedSummaries) {
       return summary
     }
     if (parsedSummaries.length === 0) {
       return summary
     }
-    console.log("story", parsedSummaries)
-    const story = parsedSummaries.map((item: ParsedLog, i: number) => (
-      <div key={i} style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
+    // console.log("story", parsedSummaries)
+    const story = parsedSummaries.map((item) => (
+      <div style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
     ))
     
     return <div className="summary">{summary} <br /> {story}</div>
+    // return <div className="summary">{summary} <br /> </div>
   }
 
   return (
@@ -120,7 +123,7 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
                 
                 {tx.method && <div className="action">{tx.method}</div>}
                 {/* <div>{tx.input}</div> */}
-
+                {tx.chainId}
               </div>
             </div>
             <div>{getExtendedSummary(tx)} </div>
