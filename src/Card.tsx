@@ -67,10 +67,11 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     '421613': 'https://testnet.arbiscan.io',
     '8453': 'https://basescan.org',
     '84531': 'https://testnet.basescan.org',
+    '84532': 'https://sepolia.basescan.org',
   };
 
   const getExplorerUrl = (tx: TxRecord) => {
-    const explorer = CHAIN_EXPLORERS[tx.chainId.toString()] || 'https://etherscan.io';
+    const explorer = tx?.chainId ? CHAIN_EXPLORERS[tx?.chainId.toString()] : 'https://etherscan.io';
     return `${explorer}/tx/${tx.hash}`;
   };
 
@@ -81,6 +82,7 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
   }
 
   const getExtendedSummary = (tx: TxRecord) => {
+    console.log("getExtendedSummary", tx)
     const summary = tx.summary
     const logs = tx.parsedLogs
     // console.log("summaries", logs)
@@ -96,8 +98,8 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
       return summary
     }
     // console.log("story", parsedSummaries)
-    const story = parsedSummaries.map((item) => (
-      <div style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
+    const story = parsedSummaries.map((item, i) => (
+      <div key={i} style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
     ))
     
     return <div className="summary">{summary} <br /> {story}</div>

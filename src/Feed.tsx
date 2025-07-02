@@ -22,7 +22,9 @@ export default function TransactionFeed() {
       socketRef.current.close();
     }
     console.log(import.meta.env.VITE_SOCKET_URL)
-    const url = `${import.meta.env.VITE_SOCKET_URL}?stream=addr:${stream}`
+    // const url = `${import.meta.env.VITE_SOCKET_URL}?stream=addr:${stream}`
+    const url = `${import.meta.env.VITE_SOCKET_URL}?list=88`
+
     
     try {
         socket = new WebSocket(url);
