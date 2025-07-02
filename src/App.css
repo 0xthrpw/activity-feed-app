@@ -101,3 +101,19 @@
     border-radius:5px;
     margin: 5px;
 }
+
+/* Analytics Mode Styles */
+.analytics-mode {
+    border: 2px solid #3b82f6 !important;
+    background-color: #eff6ff;
+}
+
+.analytics-link {
+    color: #1d4ed8 !important;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.analytics-link:hover {
+    color: #1e40af !important;
+}

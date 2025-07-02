@@ -1,31 +1,10 @@
-// import { useEffect } from 'react';
-export type TxRecord = {
-    hash: string;
-    chainId: number;
-    fromAddress: string;
-    fromName: string;
-    fromAvatar: string;
-    toAddress: string;
-    value: string;
-    input: string;
-    summary: string;
-    summaries: string;
-    method: string;
-    blockTimestamp: string;
-    network: string;
-    parsedLogs: ParsedLog[];
-  };
+import { useUI } from './contexts/UIContext';
+import { TxRecord, ParsedLog } from './types';
 
-export type ParsedLog = {
-    address: string;
-    contractName: string;
-    name: string;
-    args: Record<string, unknown>;
-    summary: string;
-    icon?: string;
-};
+export type { TxRecord, ParsedLog };
 
 export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
+  const { viewMode, openAnalyticsModal } = useUI();
 
   const parseTimestamp = (timestamp: string): Date => {
     if (!timestamp) return new Date(NaN);
@@ -81,6 +60,24 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     return url
   }
 
+  const handleTimestampClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (viewMode === 'analytics') {
+      openAnalyticsModal('transaction', { hash: tx.hash });
+    } else {
+      window.open(getExplorerUrl(tx), '_blank');
+    }
+  };
+
+  const handleAddressClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (viewMode === 'analytics') {
+      openAnalyticsModal('address', { address: tx.fromAddress });
+    } else {
+      window.open(getEFPUrl(tx), '_blank');
+    }
+  };
+
   const getExtendedSummary = (tx: TxRecord) => {
     console.log("getExtendedSummary", tx)
     const summary = tx.summary
@@ -107,14 +104,28 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
   }
 
   return (
-    <div className="card border rounded" key={index}>
+    <div className={`card border rounded ${viewMode === 'analytics' ? 'analytics-mode' : ''}`} key={index}>
         <li key={`${tx.hash}-${index}`} className="p-2 ">
             <div>
               <div className="leftcell">
-                <a href={getEFPUrl(tx)}>{tx.fromName}</a>
+                <a 
+                  href="#" 
+                  onClick={handleAddressClick}
+                  className={viewMode === 'analytics' ? 'analytics-link' : ''}
+                  title={viewMode === 'analytics' ? 'View address analytics' : 'View on EFP'}
+                >
+                  {tx.fromName}
+                </a>
               </div>
               <div className="rightcell top" title={parseTimestamp(tx.blockTimestamp).toLocaleString()}>
-                <a href={getExplorerUrl(tx)}>{timeSince(tx.blockTimestamp)}</a>
+                <a 
+                  href="#" 
+                  onClick={handleTimestampClick}
+                  className={viewMode === 'analytics' ? 'analytics-link' : ''}
+                  title={viewMode === 'analytics' ? 'View transaction analytics' : 'View on block explorer'}
+                >
+                  {timeSince(tx.blockTimestamp)}
+                </a>
               </div>
             </div>
             <div>

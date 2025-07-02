@@ -38,6 +38,7 @@ The application supports the EthFollow Feed v2 WebSocket API with three modes:
 ### Environment Variables
 
 - `VITE_SOCKET_URL` - WebSocket server URL for the feed service
+- `VITE_ANALYTICS_URL` - Base URL for analytics HTTP API (defaults to http://localhost:8080/analytics)
 
 ### TypeScript Types
 
