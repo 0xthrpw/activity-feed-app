@@ -16,9 +16,10 @@ This is a React + TypeScript + Vite application that displays real-time Ethereum
 
 ### Core Components
 
-- **App.tsx** - Root component that renders TransactionFeed
+- **App.tsx** - Root component with context providers
 - **Feed.tsx** - Main component that manages WebSocket connection and displays transaction list
-- **Card.tsx** - Individual transaction card component with timestamp parsing, chain explorer links, and extended summaries
+- **Card.tsx** - Individual transaction card component with smart link behavior for normal/analytics modes
+- **Modal.tsx** - Reusable modal component with backdrop, escape key handling, and scroll prevention
 
 ### Key Features
 

@@ -3,9 +3,7 @@ import { useFeed } from './contexts/FeedContext';
 import { useUI } from './contexts/UIContext';
 import Card from './Card';
 import ConnectionControls from './components/ConnectionControls';
-import FilterPanel from './components/FilterPanel';
 import AnalyticsModal from './components/AnalyticsModal';
-import ViewModeToggle from './components/ViewModeToggle';
 
 export default function TransactionFeed() {
   const { 
@@ -33,14 +31,8 @@ export default function TransactionFeed() {
 
   return (
     <>
-      {/* Connection Controls Panel */}
+      {/* Connection Controls Modal */}
       <ConnectionControls />
-      
-      {/* Filter Panel */}
-      <FilterPanel />
-      
-      {/* View Mode Toggle */}
-      <ViewModeToggle />
       
       {/* Analytics Modal */}
       <AnalyticsModal />
@@ -82,8 +74,8 @@ export default function TransactionFeed() {
               <p>Waiting for transactions...</p>
               <p className="text-sm mt-2">
                 {viewMode === 'analytics' 
-                  ? 'In analytics mode - click links to view analytics data'
-                  : 'In normal mode - click links to visit external sites'
+                  ? '📊 Analytics mode active - click links to view analytics data'
+                  : 'Normal mode - click links to visit external sites'
                 }
               </p>
             </div>

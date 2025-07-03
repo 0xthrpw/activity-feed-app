@@ -95,11 +95,14 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
       return summary
     }
     // console.log("story", parsedSummaries)
-    const story = parsedSummaries.map((item, i) => (
-      <div key={i} style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
-    ))
+    // filter the parsedSummaries to only include those with a summary
+    const filteredSummaries = parsedSummaries.filter(item => item?.summary && item?.name)
+
+    const story = filteredSummaries.map((item, i) => {
+      return <div className="summary" key={i} style={{ marginBottom: '0.25rem' }}>{item?.summary} {item?.name} </div>
+    })
     
-    return <div className="summary">{summary} <br /> {story}</div>
+    return <div>{summary} <br /> {story}</div>
     // return <div className="summary">{summary} <br /> </div>
   }
 

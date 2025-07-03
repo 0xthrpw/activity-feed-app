@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useFeed } from '../contexts/FeedContext';
 import { useUI } from '../contexts/UIContext';
-import { ConnectionMode, EFPConfig, LegacyConfig, MultiplexConfig } from '../types';
+import { ConnectionMode, EFPConfig, LegacyConfig, MultiplexConfig, MultiplexFilters } from '../types';
+import Modal from './Modal';
+import FilterControls from './FilterControls';
 
 export default function ConnectionControls() {
   const { 
@@ -102,29 +104,14 @@ export default function ConnectionControls() {
     }));
   };
 
-  if (!isConnectionControlsOpen) {
-    return (
-      <button 
-        onClick={toggleConnectionControls}
-        className="fixed top-4 left-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        Connection Settings
-      </button>
-    );
-  }
-
   return (
-    <div className="fixed top-0 left-0 w-80 h-full bg-white shadow-lg border-r overflow-y-auto z-50">
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Connection Settings</h2>
-          <button 
-            onClick={toggleConnectionControls}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
-        </div>
+    <Modal
+      isOpen={isConnectionControlsOpen}
+      onClose={toggleConnectionControls}
+      title="Connection Settings"
+      maxWidth="max-w-lg"
+    >
+        <div className="p-6">
 
         {/* Connection Status */}
         <div className="mb-4 p-3 rounded border">
@@ -252,6 +239,12 @@ export default function ConnectionControls() {
             <p className="text-sm text-gray-600 mt-1">
               Stream transactions for multiple addresses with advanced filtering
             </p>
+            
+            {/* Filters Section for Multiplex Mode */}
+            <div className="mt-4 border-t pt-4">
+              <h3 className="font-medium mb-3">Filters</h3>
+              <FilterControls />
+            </div>
           </div>
         )}
 
@@ -300,7 +293,7 @@ export default function ConnectionControls() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+        </div>
+    </Modal>
   );
 }

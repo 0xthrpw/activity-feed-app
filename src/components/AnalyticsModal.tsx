@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUI } from '../contexts/UIContext';
 import { useAnalytics } from '../contexts/AnalyticsContext';
 import { TransactionAnalytics, AddressAnalytics } from '../types';
+import Modal from './Modal';
 
 export default function AnalyticsModal() {
   const { 
@@ -43,62 +44,42 @@ export default function AnalyticsModal() {
     fetchData();
   }, [isAnalyticsModalOpen, analyticsModalType, analyticsModalData, fetchTransactionAnalytics, fetchAddressAnalytics]);
 
-  if (!isAnalyticsModalOpen) {
-    return null;
-  }
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      closeAnalyticsModal();
-    }
-  };
+  const title = analyticsModalType === 'transaction' ? 'Transaction Analytics' : 'Address Analytics';
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onClick={handleBackdropClick}
+    <Modal
+      isOpen={isAnalyticsModalOpen}
+      onClose={closeAnalyticsModal}
+      title={title}
+      maxWidth="max-w-4xl"
     >
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">
-              {analyticsModalType === 'transaction' ? 'Transaction Analytics' : 'Address Analytics'}
-            </h2>
-            <button 
-              onClick={closeAnalyticsModal}
-              className="text-gray-500 hover:text-gray-700 text-2xl"
-            >
-              ✕
-            </button>
+      <div className="p-6">
+        {isLoading && (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <p className="mt-2 text-gray-600">Loading analytics data...</p>
           </div>
+        )}
 
-          {isLoading && (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <p className="mt-2 text-gray-600">Loading analytics data...</p>
-            </div>
-          )}
+        {error && (
+          <div className="bg-red-100 border border-red-300 rounded p-4 mb-4">
+            <h3 className="font-medium text-red-800">Error</h3>
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
 
-          {error && (
-            <div className="bg-red-100 border border-red-300 rounded p-4 mb-4">
-              <h3 className="font-medium text-red-800">Error</h3>
-              <p className="text-red-700">{error}</p>
-            </div>
-          )}
-
-          {data && !isLoading && (
-            <>
-              {analyticsModalType === 'transaction' && (
-                <TransactionAnalyticsContent data={data as TransactionAnalytics} />
-              )}
-              {analyticsModalType === 'address' && (
-                <AddressAnalyticsContent data={data as AddressAnalytics} />
-              )}
-            </>
-          )}
-        </div>
+        {data && !isLoading && (
+          <>
+            {analyticsModalType === 'transaction' && (
+              <TransactionAnalyticsContent data={data as TransactionAnalytics} />
+            )}
+            {analyticsModalType === 'address' && (
+              <AddressAnalyticsContent data={data as AddressAnalytics} />
+            )}
+          </>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }
 

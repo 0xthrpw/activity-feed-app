@@ -57,24 +57,7 @@ export default function FilterPanel() {
   const isConnected = connectionStatus === 'connected';
 
   if (!isFilterPanelOpen) {
-    return (
-      <button 
-        onClick={toggleFilterPanel}
-        className={`fixed top-4 right-4 px-4 py-2 rounded text-white ${
-          isMultiplexMode 
-            ? 'bg-green-500 hover:bg-green-600' 
-            : 'bg-gray-400 cursor-not-allowed'
-        }`}
-        disabled={!isMultiplexMode}
-        title={!isMultiplexMode ? 'Filters are only available in Multiplex mode' : 'Open Filter Panel'}
-      >
-        Filters {isMultiplexMode && Object.keys(filters).length > 0 && (
-          <span className="ml-1 bg-white text-green-500 px-1 rounded-full text-xs">
-            {Object.keys(filters).length}
-          </span>
-        )}
-      </button>
-    );
+    return null;
   }
 
   const handleApplyFilters = () => {
@@ -145,7 +128,7 @@ export default function FilterPanel() {
   };
 
   return (
-    <div className="fixed top-0 right-0 w-80 h-full bg-white shadow-lg border-l overflow-y-auto z-50">
+    <div className="fixed top-0 right-0 w-80 h-full bg-white shadow-lg border-l overflow-y-auto z-40">
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Filters</h2>
