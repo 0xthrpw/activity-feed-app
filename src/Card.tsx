@@ -1,31 +1,10 @@
-// import { useEffect } from 'react';
-export type TxRecord = {
-    hash: string;
-    chainId: number;
-    fromAddress: string;
-    fromName: string;
-    fromAvatar: string;
-    toAddress: string;
-    value: string;
-    input: string;
-    summary: string;
-    summaries: string;
-    method: string;
-    blockTimestamp: string;
-    network: string;
-    parsedLogs: ParsedLog[];
-  };
+import { useUI } from './contexts/UIContext';
+import { TxRecord, ParsedLog } from './types';
 
-export type ParsedLog = {
-    address: string;
-    contractName: string;
-    name: string;
-    args: Record<string, unknown>;
-    summary: string;
-    icon?: string;
-};
+export type { TxRecord, ParsedLog };
 
 export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
+  const { viewMode, openAnalyticsModal } = useUI();
 
   const parseTimestamp = (timestamp: string): Date => {
     if (!timestamp) return new Date(NaN);
@@ -67,10 +46,11 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     '421613': 'https://testnet.arbiscan.io',
     '8453': 'https://basescan.org',
     '84531': 'https://testnet.basescan.org',
+    '84532': 'https://sepolia.basescan.org',
   };
 
   const getExplorerUrl = (tx: TxRecord) => {
-    const explorer = CHAIN_EXPLORERS[tx.chainId.toString()] || 'https://etherscan.io';
+    const explorer = tx?.chainId ? CHAIN_EXPLORERS[tx?.chainId.toString()] : 'https://etherscan.io';
     return `${explorer}/tx/${tx.hash}`;
   };
 
@@ -80,7 +60,26 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     return url
   }
 
+  const handleTimestampClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (viewMode === 'analytics') {
+      openAnalyticsModal('transaction', { hash: tx.hash });
+    } else {
+      window.open(getExplorerUrl(tx), '_blank');
+    }
+  };
+
+  const handleAddressClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (viewMode === 'analytics') {
+      openAnalyticsModal('address', { address: tx.fromAddress });
+    } else {
+      window.open(getEFPUrl(tx), '_blank');
+    }
+  };
+
   const getExtendedSummary = (tx: TxRecord) => {
+    console.log("getExtendedSummary", tx)
     const summary = tx.summary
     const logs = tx.parsedLogs
     // console.log("summaries", logs)
@@ -96,23 +95,40 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
       return summary
     }
     // console.log("story", parsedSummaries)
-    const story = parsedSummaries.map((item) => (
-      <div style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
-    ))
+    // filter the parsedSummaries to only include those with a summary
+    const filteredSummaries = parsedSummaries.filter(item => item?.summary && item?.name)
+
+    const story = filteredSummaries.map((item, i) => {
+      return <div className="summary" key={i} style={{ marginBottom: '0.25rem' }}>{item?.summary} {item?.name} </div>
+    })
     
-    return <div className="summary">{summary} <br /> {story}</div>
+    return <div>{summary} <br /> {story}</div>
     // return <div className="summary">{summary} <br /> </div>
   }
 
   return (
-    <div className="card border rounded" key={index}>
+    <div className={`card border rounded ${viewMode === 'analytics' ? 'analytics-mode' : ''}`} key={index}>
         <li key={`${tx.hash}-${index}`} className="p-2 ">
             <div>
               <div className="leftcell">
-                <a href={getEFPUrl(tx)}>{tx.fromName}</a>
+                <a 
+                  href="#" 
+                  onClick={handleAddressClick}
+                  className={viewMode === 'analytics' ? 'analytics-link' : ''}
+                  title={viewMode === 'analytics' ? 'View address analytics' : 'View on EFP'}
+                >
+                  {tx.fromName}
+                </a>
               </div>
               <div className="rightcell top" title={parseTimestamp(tx.blockTimestamp).toLocaleString()}>
-                <a href={getExplorerUrl(tx)}>{timeSince(tx.blockTimestamp)}</a>
+                <a 
+                  href="#" 
+                  onClick={handleTimestampClick}
+                  className={viewMode === 'analytics' ? 'analytics-link' : ''}
+                  title={viewMode === 'analytics' ? 'View transaction analytics' : 'View on block explorer'}
+                >
+                  {timeSince(tx.blockTimestamp)}
+                </a>
               </div>
             </div>
             <div>

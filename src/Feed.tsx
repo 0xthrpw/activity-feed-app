@@ -1,75 +1,107 @@
-// React client that connects to the Redis stream WebSocket server and displays Ethereum transactions
-
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
+import { useFeed } from './contexts/FeedContext';
+import { useUI } from './contexts/UIContext';
 import Card from './Card';
-import type { TxRecord } from './Card';
+import ConnectionControls from './components/ConnectionControls';
+import AnalyticsModal from './components/AnalyticsModal';
 
-const getStreamFromUrl = () => {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('address') || '';
-};
-
-let socket: WebSocket;
 export default function TransactionFeed() {
-  const [records, setRecords] = useState<TxRecord[]>([]);
-  const socketRef = useRef<WebSocket | null>(null);
-  const [stream] = useState(getStreamFromUrl());
+  const { 
+    transactions, 
+    connectionConfig, 
+    connectionStatus, 
+    setConnectionConfig, 
+    connect, 
+    error 
+  } = useFeed();
 
+  const { viewMode } = useUI();
+
+  // Auto-connect with default EFP configuration if no config is set
   useEffect(() => {
-    if (!stream) return;
-
-    if (socketRef.current) {
-      socketRef.current.close();
+    if (!connectionConfig) {
+      const defaultConfig = {
+        mode: 'efp' as const,
+        config: { listId: '88' }
+      };
+      setConnectionConfig(defaultConfig);
+      connect().catch(console.error);
     }
-    console.log(import.meta.env.VITE_SOCKET_URL)
-    const url = `${import.meta.env.VITE_SOCKET_URL}?stream=addr:${stream}`
-    
-    try {
-        socket = new WebSocket(url);
-    } catch (err) {
-        console.error('Invalid WebSocket URL:', err);
-        return;
-    }
-    
-    socketRef.current = socket;
-
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-
-        setRecords((prev) => [data as TxRecord, ...prev]);
-      } catch (err) {
-        console.error('Failed to parse WebSocket message:', err);
-      }
-    };
-
-    socket.onerror = (err) => {
-      console.error('WebSocket error:', err);
-    };
-
-    socket.onclose = () => {
-      socketRef.current = null;
-    };
-
-    return () => {
-      socket.close();
-    };
-  }, [stream]);
+  }, [connectionConfig, setConnectionConfig, connect]);
 
   return (
-    <div className="p-4 max-w-2xl mx-auto ">
-      {!stream && (
-        <div className="text-red-600 mb-4">Missing address in URL. Use ?address=YOUR_STREAM_KEY</div>
-      )}
-      {!socket && (
-        <div className="text-red-600 mb-4">Websocket Fail</div>
-      )}
+    <>
+      {/* Connection Controls Modal */}
+      <ConnectionControls />
+      
+      {/* Analytics Modal */}
+      <AnalyticsModal />
 
-      <div className="space-y-2 feed-wrapper">
-        {records.map((tx, i) => (
-            <Card key={i} tx={tx} index={i} />
-        ))}
+      {/* Main Feed Content */}
+      <div className="p-4 max-w-2xl mx-auto">
+        {/* Connection Status */}
+        {connectionStatus === 'disconnected' && !connectionConfig && (
+          <div className="text-gray-600 mb-4 text-center">
+            <p>Use the Connection Settings to configure your feed.</p>
+          </div>
+        )}
+
+        {connectionStatus === 'connecting' && (
+          <div className="text-blue-600 mb-4 text-center">
+            <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+            Connecting...
+          </div>
+        )}
+
+        {connectionStatus === 'reconnecting' && (
+          <div className="text-yellow-600 mb-4 text-center">
+            <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-500 mr-2"></div>
+            Reconnecting...
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-100 border border-red-300 rounded p-4 mb-4">
+            <h3 className="font-medium text-red-800">Connection Error</h3>
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        {/* Transaction Feed */}
+        <div className="space-y-2 feed-wrapper">
+          {transactions.length === 0 && connectionStatus === 'connected' && (
+            <div className="text-gray-600 text-center py-8">
+              <p>Waiting for transactions...</p>
+              <p className="text-sm mt-2">
+                {viewMode === 'analytics' 
+                  ? '📊 Analytics mode active - click links to view analytics data'
+                  : 'Normal mode - click links to visit external sites'
+                }
+              </p>
+            </div>
+          )}
+          
+          {transactions.map((tx, i) => (
+            <Card key={`${tx.hash}-${i}`} tx={tx} index={i} />
+          ))}
+        </div>
+
+        {/* Footer Info */}
+        {transactions.length > 0 && (
+          <div className="text-center text-gray-500 text-sm mt-8 pb-4">
+            Showing {transactions.length} recent transactions
+            {connectionConfig?.mode === 'efp' && (
+              <span> from EFP list {connectionConfig.config.listId}</span>
+            )}
+            {connectionConfig?.mode === 'legacy' && (
+              <span> for {connectionConfig.config.address}</span>
+            )}
+            {connectionConfig?.mode === 'multiplex' && (
+              <span> for {connectionConfig.config.addresses.length} addresses</span>
+            )}
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }
