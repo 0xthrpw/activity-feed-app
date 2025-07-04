@@ -99,10 +99,10 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
     const filteredSummaries = parsedSummaries.filter(item => item?.summary && item?.name)
 
     const story = filteredSummaries.map((item, i) => {
-      return <div className="summary" key={i} style={{ marginBottom: '0.25rem' }}>{item?.summary} {item?.name} </div>
+      return <div className="summary" key={i} style={{ marginBottom: '0.25rem' }}>{item?.summary}</div>
     })
     
-    return <div>{summary} <br /> {story}</div>
+    return <div>{story}</div>
     // return <div className="summary">{summary} <br /> </div>
   }
 
@@ -136,10 +136,10 @@ export default function Card({ tx, index }: { tx: TxRecord, index: number }) {
                 {tx.fromAvatar && <img src={tx.fromAvatar} alt={`${tx.fromName}'s avatar`} className="avatar" />}
               </div>
               <div className="inline top">
-                
-                {tx.method && <div className="action">{tx.method}</div>}
+                {tx.contractName && <div className="header-cell contractName">{tx.contractName}</div>}
+                {tx.method && <div className="header-cell action">{tx.method}</div>}
                 {/* <div>{tx.input}</div> */}
-                {tx.chainId}
+                <div className="header-cell chainid">{tx.chainId}</div>
               </div>
             </div>
             <div>{getExtendedSummary(tx)} </div>

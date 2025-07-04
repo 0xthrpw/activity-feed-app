@@ -9,6 +9,7 @@ export type TxRecord = {
   toAddress: string;
   value: string;
   input: string;
+  contractName: string | null;
   summary: string;
   summaries: string;
   method: string;
